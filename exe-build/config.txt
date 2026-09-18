@@ -1,0 +1,7 @@
+;!@Install@!UTF-8!
+Title="RTD 开机 Logo 工作室 © darst335"
+Progress="no"
+GUIMode="2"
+RunProgram="hidcon:node.exe server.js"
+;!@InstallEnd@!
+; authorship: darst335 / D335-RTDLOGO / 2026-09 / original work with AI pair

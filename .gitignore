@@ -1,0 +1,14 @@
+# 固件与二进制产物不入库（固件涉及版权；成品挂 Release）
+*.bin
+*.BIN
+*.rom
+*.img
+*.bak*
+*.7z
+node.exe
+node-v*.zip
+payload/
+test-out/
+e2e-*/
+*.log
+b64.txt

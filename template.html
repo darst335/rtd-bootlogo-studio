@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+  ============================================================================
+  RTD 开机 Logo 工作室  ·  项目代号 D335-RTDLOGO
+  ----------------------------------------------------------------------------
+  归属声明（AUTHORSHIP NOTICE）：
+    本作品由 darst335 与 AI 结对开发 —— darst335 提出全部需求、提供真实
+    固件样本并逐项刷机验收；格式逆向、引擎与界面均为原创工作，
+    非抄袭、非二次打包他人成果。转载请保留本声明。  © 2026 darst335
+  验证方式（任选其一）：
+    · 控制台： RTDLogo.verifyAuthor()  → true
+    · 控制台： window.__RTD_WS__       → 作者信息对象
+    · 界面：   连点标题栏「© darst335」印章 3 次
+  ============================================================================
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 归属标记（AUTHORSHIP METADATA）：author=darst335 project=D335-RTDLOGO -->
+<meta name="author" content="darst335">
+<meta name="generator" content="D335-RTDLOGO (co-developed with AI pair; verified on real RTD2270/266x firmware by darst335)">
+<meta name="description" content="RTD 开机 Logo 工作室 © darst335 — 原创作品">
+<title>RTD 开机 Logo 工作室</title>
+<style>
+:root{
+  --bg:#0e1116; --panel:#161b23; --panel2:#1c232e; --line:#2a3342;
+  --tx:#dbe4f0; --tx2:#8b98ab; --acc:#4ea1ff; --ok:#3ecf8e; --warn:#f0b429; --bad:#ff5c5c;
+  --mono:Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:14px/1.6 "Microsoft YaHei",system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto}
+button:disabled{opacity:.4;cursor:not-allowed}
+header h1{font-size:17px;font-weight:600;letter-spacing:.5px}
+header h1 b{color:var(--acc)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:20px;font-size:12px;background:var(--panel2);border:1px solid var(--line);color:var(--tx2)}
+.chip.ok{color:var(--ok);border-color:var(--ok)}
+.chip.warn{color:var(--warn);border-color:var(--warn)}
+.chip.bad{color:var(--bad);border-color:var(--bad)}
+.spacer{flex:1}
+button{background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 14px;font:13px "Microsoft YaHei",sans-serif;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--acc);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--acc);border-color:var(--acc);color:#08131f;font-weight:600}
+button.primary:hover{filter:brightness(1.12)}
+button.big{padding:10px 18px;font-size:14px}
+main{flex:1;display:grid;grid-template-columns:392px 1fr;gap:12px;padding:12px;min-height:0}
+#left{overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h3{font-size:13px;color:var(--acc);margin-bottom:8px;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.card h3 .n{width:18px;height:18px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx2)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+td{padding:3px 0;vertical-align:top}
+td.k{color:var(--tx2);width:96px;white-space:nowrap}
+td.v{font-family:var(--mono);color:var(--tx);word-break:break-all}
+.row{display:flex;align-items:center;gap:8px;margin:7px 0;flex-wrap:wrap}
+.row label{color:var(--tx2);font-size:12.5px;min-width:58px}
+input[type=text],textarea,select{background:#0d1117;border:1px solid var(--line);border-radius:7px;color:var(--tx);padding:6px 9px;font:13px inherit;outline:none}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--acc)}
+textarea{width:100%;resize:vertical}
+input[type=range]{flex:1;accent-color:var(--acc)}
+input[type=color]{width:34px;height:26px;border:1px solid var(--line);border-radius:6px;background:none;padding:0;cursor:pointer}
+input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
+.tabs{display:flex;gap:4px;background:var(--panel2);border-radius:9px;padding:4px;margin-bottom:10px}
+.tabs button{flex:1;border:none;background:none;padding:6px 0;border-radius:6px;color:var(--tx2)}
+.tabs button.on{background:var(--acc);color:#08131f;font-weight:600}
+.pane{display:none}.pane.on{display:block}
+.stat{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.stat:last-child{border:none}
+.stat b{font-family:var(--mono)}
+#right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+.viewbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;min-height:0;flex:1}
+.viewbox .vh{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px;color:var(--tx2)}
+.viewbox .vh b{color:var(--tx)}
+.cwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:
+ repeating-conic-gradient(#141920 0% 25%, #10141b 0% 50%) 0 0/24px 24px;border-radius:9px;overflow:auto;border:1px solid var(--line)}
+canvas{image-rendering:pixelated;background:#000}
+#drop{position:fixed;inset:0;background:rgba(14,17,22,.88);display:none;align-items:center;justify-content:center;z-index:50;font-size:22px;color:var(--acc);border:3px dashed var(--acc);border-radius:16px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:60}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 26px;width:560px;max-width:92vw;max-height:88vh;overflow-y:auto}
+.mbox h2{font-size:16px;margin-bottom:12px;color:var(--warn)}
+.mbox .kv{font-size:13px;margin:4px 0}
+.mbox .kv b{font-family:var(--mono);color:var(--acc)}
+.mbox .note{background:#241f10;border:1px solid #5a4a1a;border-radius:8px;padding:8px 12px;font-size:12.5px;color:#e8cf8a;margin:12px 0}
+.mbox .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.hint{font-size:12px;color:var(--tx2)}
+.sw{display:inline-block;width:11px;height:11px;border:1px solid var(--line);vertical-align:-1px;margin-right:3px}
+.mono{font-family:var(--mono)}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--tx);padding:9px 20px;border-radius:10px;z-index:80;display:none;font-size:13px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>RTD <b>开机 Logo</b> 工作室</h1>
+  <span class="chip" id="chipSign" title="作者：darst335（与 AI 结对开发）· 连点 3 次查看归属声明" style="cursor:pointer;user-select:none">© darst335</span>
+  <span class="chip" id="chipFw">未打开固件</span>
+  <span class="chip" id="chipMode" style="display:none"></span>
+  <div class="spacer"></div>
+  <button id="btnServerOpen" style="display:none">从电脑打开…</button>
+  <button id="btnOpen" class="primary">打开固件 (.bin)</button>
+  <button id="btnExit" style="display:none" title="退出后台程序（关掉页面也会自动退出）">退出程序</button>
+  <input type="file" id="fileFw" accept=".bin,.BIN,.rom,.img" style="display:none">
+  <input type="file" id="fileImg" accept="image/*" style="display:none">
+</header>
+
+<main>
+  <div id="left">
+    <div class="card">
+      <h3><span class="n">1</span>固件识别</h3>
+      <table id="tblInfo"><tr><td class="k">状态</td><td class="v">请先打开固件文件</td></tr></table>
+      <div class="row" style="margin-top:8px">
+        <label>墨迹极性</label>
+        <label style="min-width:0"><input type="radio" name="pol" value="1" checked> bit=1 是墨迹（常规）</label>
+        <label style="min-width:0"><input type="radio" name="pol" value="0"> bit=0 是墨迹（反相库）</label>
+      </div>
+      <div class="hint">极性决定 1bpp 字模哪一位是笔画。已按硬件约定自动判定，预览与实机不符时再切换。</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="n">2</span>设计新 Logo</h3>
+      <div class="row" id="rowCanvas" style="display:none">
+        <label>画布</label>
+        <input type="number" id="inCvW" style="width:62px" min="12" step="12"> <span class="hint">×</span>
+        <input type="number" id="inCvH" style="width:62px" min="18" step="18"> <span class="hint">px</span>
+        <button id="btnCanvas">调整大小</button>
+      </div>
+      <div class="hint" id="cvHint" style="display:none;margin-top:-3px"></div>
+      <div class="tabs" style="margin-top:8px">
+        <button id="tabText" class="on">文字生成</button>
+        <button id="tabImg">图片替换</button>
+        <button id="tabPaint">画笔修改</button>
+      </div>
+      <div class="pane on" id="paneText">
+        <textarea id="txtLogo" rows="2" placeholder="输入 logo 文字，可多行">WESCOM</textarea>
+        <div class="row">
+          <label>字体</label>
+          <select id="selFont" style="flex:1"></select>
+        </div>
+        <div class="row">
+          <label>样式</label>
+          <label style="min-width:0"><input type="checkbox" id="ckBold" checked> 加粗</label>
+          <label style="min-width:0"><input type="checkbox" id="ckItalic"> 斜体</label>
+          <label style="min-width:0">高度 <input type="range" id="rgSize" min="20" max="100" value="78" style="width:110px"> <span class="mono" id="vSize">78%</span></label>
+        </div>
+        <div class="row">
+          <label>模式</label>
+          <label style="min-width:0"><input type="checkbox" id="ckTextOverlay"> 叠加模式（不清空已导入的图片/现有内容，文字直接叠上去）</label>
+        </div>
+        <div class="row">
+          <label>位置</label>
+          <input type="range" id="rgTxtX" min="-100" max="100" value="0" style="width:86px" title="水平位置"><span class="mono" id="vTxtX">0</span>
+          <input type="range" id="rgTxtY" min="-100" max="100" value="0" style="width:86px" title="垂直位置"><span class="mono" id="vTxtY">0</span>
+        </div>
+        <div class="hint" style="margin-top:-3px">叠加模式（PS 式编辑）：点「生成文字 Logo」后，<b>直接在画布上拖动文字</b>即可移动位置；拖<b>文字右下角的蓝色方块</b>可拉伸缩放大小；鼠标悬停在文字上<b>滚轮</b>也能缩放。位置 / 高度滑块与拖动实时同步，误操作按 <b>Ctrl+Z</b> 撤销。按住 <b>Alt</b> 可在文字区域内使用画笔。</div>
+        <div class="row">
+          <label>阈值</label>
+          <input type="range" id="rgTh1" min="20" max="235" value="128"><span class="mono" id="vTh1">128</span>
+        </div>
+        <button class="primary big" id="btnGenText" style="width:100%">生成文字 Logo</button>
+      </div>
+      <div class="pane" id="paneImg">
+        <div class="row"><button id="btnPickImg" style="flex:1">选择图片…</button><span class="hint" id="imgName">未选择</span></div>
+        <div class="row">
+          <label>适配</label>
+          <select id="selFit"><option value="contain">居中适配（保持比例）</option><option value="cover">拉伸铺满</option></select>
+        </div>
+        <div class="row">
+          <label>缩放</label>
+          <input type="range" id="rgImgZoom" min="20" max="400" value="100"><span class="mono" id="vImgZoom">100%</span>
+        </div>
+        <div class="row">
+          <label>阈值</label>
+          <input type="range" id="rgTh2" min="20" max="235" value="140"><span class="mono" id="vTh2">140</span>
+        </div>
+        <div class="row">
+          <label>选项</label>
+          <label style="min-width:0"><input type="checkbox" id="ckInv"> 反相</label>
+          <label style="min-width:0"><input type="checkbox" id="ckDither"> 抖动（照片用）</label>
+        </div>
+        <div class="row" id="rowKeepColor" style="display:none">
+          <label>颜色</label>
+          <label style="min-width:0"><input type="checkbox" id="ckKeepColor"> 保留图片颜色</label>
+          <span class="hint">按格自动匹配调色板</span>
+        </div>
+        <div class="hint" style="margin-top:2px">图片导入后：在右侧「新 Logo」画布上<b>拖动</b>可移动图片位置，<b>滚轮</b>或滑块缩放，随时点「生成图片 Logo」重新生成。勾选「保留图片颜色」时，阈值变为<b>与背景色的色差</b>（自动取图片自身四角作背景色，拖动/缩放不会引起颜色跳变）。反相 / 抖动勾选后立即生效；彩色模式下抖动按色差做误差扩散。</div>
+        <button class="primary big" id="btnGenImg" style="width:100%;margin-top:8px">生成图片 Logo</button>
+      </div>
+      <div class="pane" id="panePaint">
+        <div class="row">
+          <label>工具</label>
+          <button id="btnPen" class="on" style="border-color:var(--acc)">✏ 画笔</button>
+          <button id="btnErase">🧽 橡皮</button>
+        </div>
+        <div class="row"><label>笔宽</label><input type="range" id="rgPen" min="1" max="8" value="2"><span class="mono" id="vPen">2</span></div>
+        <div class="row">
+          <button id="btnUndo" style="flex:1" title="撤销上一步 (Ctrl+Z)" disabled>↶ 撤销</button>
+          <button id="btnRedo" style="flex:1" title="重做 (Ctrl+Y)" disabled>↷ 重做</button>
+        </div>
+        <div class="row">
+          <button id="btnInkInv" style="flex:1">全图反相</button>
+          <button id="btnInkClr" style="flex:1">清空</button>
+          <button id="btnInkRestore" style="flex:1">恢复原 Logo</button>
+        </div>
+        <div class="hint">直接在右侧「新 Logo」画布上按住拖动即可修改（画布始终可画，无需先点生成）。<b>调色板固件下，画笔 = 「写入颜色」选中的颜色</b>（首次上色会自动勾选「保留图片颜色」），换选颜色即可给导入的图案分区域上色。<b>撤销 / 重做全局可用（Ctrl+Z / Ctrl+Y）</b>：画笔、生成、文字拖动、图片拖动等操作均可回退。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="n">3</span>写入体检</h3>
+      <div class="stat"><span>唯一字模</span><b id="stTiles">-</b></div>
+      <div class="stat"><span>压缩后字库</span><b id="stComp">-</b></div>
+      <div class="stat"><span>可写预算</span><b id="stLimit">-</b></div>
+      <div class="stat"><span>写入方案</span><b id="stPlan">-</b></div>
+      <div class="row" id="rowInkColor" style="display:none;margin-top:8px">
+        <label>写入颜色</label>
+        <select id="selInkColor" style="flex:1"></select>
+        <span class="sw" id="swInkColor" style="width:16px;height:16px;vertical-align:-3px" title=""></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="min-width:0"><input type="checkbox" id="ckReloc" checked> 原地放不下时自动重定位字库到空闲区（同时改写加载指令）</label>
+      </div>
+      <div class="hint" id="planHint"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="n">4</span>确认替换</h3>
+      <div class="hint" style="margin-bottom:10px">替换只改 logo 数据（MAP 表 + 字库块），其余字节原样保留，文件总大小不变。刷机需用编程器 / ISP 工具把新 .bin 写回板子。</div>
+      <button class="primary big" id="btnApply" style="width:100%" disabled>确认替换并生成固件…</button>
+    </div>
+  </div>
+
+  <div id="right">
+    <div class="viewbox">
+      <div class="vh"><b>原始 Logo</b><span id="origMeta">-</span>
+        <div class="spacer"></div>
+        <label id="lbColor" style="display:none"><input type="checkbox" id="ckColor" checked> 彩色</label>
+        <label>前景</label><input type="color" id="colFg" value="#f0f0f0">
+        <label>背景</label><input type="color" id="colBg" value="#0a0a0a">
+        <label>缩放</label><input type="range" id="rgZoom" min="1" max="8" value="2" style="width:110px"><span class="mono" id="vZoom">2x</span>
+      </div>
+      <div class="cwrap"><canvas id="cvOrig"></canvas></div>
+    </div>
+    <div class="viewbox">
+      <div class="vh"><b>新 Logo</b>（可直接用画笔修改）<span id="newMeta">-</span><div class="spacer"></div><span class="hint">拖动 = 画 / 擦</span></div>
+      <div class="cwrap"><canvas id="cvNew"></canvas></div>
+    </div>
+  </div>
+</main>
+
+<div id="drop">松手打开固件 / 图片</div>
+<div id="modal"><div class="mbox" id="mbox"></div></div>
+<div id="toast"></div>
+
+<script>
+/*__ENGINE__*/
+</script>
+<script>
+/*__UI__*/
+</script>
+</body>
+</html>
