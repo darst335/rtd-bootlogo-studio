@@ -1,6 +1,6 @@
 # RTD 开机 Logo 工作室
 
-> 修改 Realtek RTD2270 / RTD266x 系列显示器 Scaler 固件的开机 Logo —— 直接改 `.bin`，无需编程器知识，改完用编程器刷回即可。
+> 修改 Realtek RTD2270C / RTD266x 系列显示器 Scaler 固件的开机 Logo —— 直接改 `.bin`，无需编程器知识，改完用编程器刷回即可。
 
 <div align="center">
   <img src="docs/hyundai-bootlogo.png" width="420" alt="HYUNDAI 开机画面（从固件中渲染还原）">
