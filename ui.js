@@ -1071,4 +1071,4 @@ if (S.server) {
   // 关页 / 刷新 → 通知后台收工（25 秒内若没有新请求，后台自动退出）
   window.addEventListener('beforeunload', () => { try { navigator.sendBeacon('/api/bye'); } catch (e) { } });
 }
-infoRows([['状态', '请先打开固件文件（.bin）'], ['支持', 'RTD2270/266x（实测：RTD2270CLW · 板 RTD270CLW-R10.1，其他型号请自行测试） · 静态 MAP 型 / 串引用型 / OSD 记录流型开机 logo']]);
+infoRows([['状态', '请先打开固件文件（.bin）'], ['实测', 'RTD2270CLW（= RTD2270C，与 RTD2270 固件不通用）· 板 RTD270CLW-R10.1，其他型号请自行测试 · 支持：静态 MAP 型 / 串引用型 / OSD 记录流型开机 logo']]);
