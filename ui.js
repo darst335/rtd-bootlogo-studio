@@ -16,6 +16,10 @@ const $ = id => document.getElementById(id);
 const HX = n => '0x' + n.toString(16).toUpperCase();
 const hexCol = c => '#' + c.map(b => b.toString(16).padStart(2, '0')).join('');
 const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+/* i18n：中文原文查表翻译（i18n.js 先于本文件加载） */
+const __t = s => (window.__I18N ? window.__I18N.t(s) : s);
+const __tf = (s, v) => (window.__I18N ? window.__I18N.tf(s, v) : s);
+const __fr = s => (window.__I18N ? window.__I18N.frag(s) : s);
 
 const S = {
   fw: null, fwName: '', fwPath: '',
@@ -38,12 +42,14 @@ const S = {
 /* ------------------------------------------------ 基础 UI */
 let toastTimer = null;
 function toast(msg, ms) {
-  const t = $('toast'); t.textContent = msg; t.style.display = 'block';
+  const t = $('toast'); t.textContent = __t(msg); t.style.display = 'block';
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', ms || 2600);
 }
-function setChip(el, text, cls) { el.textContent = text; el.className = 'chip' + (cls ? ' ' + cls : ''); el.style.display = 'inline-flex'; }
+function setChip(el, text, cls) { el.textContent = __t(text); el.className = 'chip' + (cls ? ' ' + cls : ''); el.style.display = 'inline-flex'; }
+infoRows.last = null;
 function infoRows(rows) {
-  $('tblInfo').innerHTML = rows.map(r => `<tr><td class="k">${r[0]}</td><td class="v">${r[1]}</td></tr>`).join('');
+  infoRows.last = rows;                                   // 存原始中文行，渲染时才翻译（语言切换可整表重译）
+  $('tblInfo').innerHTML = rows.map(r => `<tr><td class="k">${__fr(r[0])}</td><td class="v">${__fr(r[1])}</td></tr>`).join('');
 }
 function openModal(html) { $('mbox').innerHTML = html; $('modal').style.display = 'flex'; }
 function closeModal() { $('modal').style.display = 'none'; }
@@ -123,8 +129,8 @@ function onFirmware(bytes, name, path) {
     $('inCvW').value = S.tw; $('inCvH').value = S.th;
     $('inCvW').max = Math.min(85 * 12, Math.floor(maxCells / 2) * 12);
     $('inCvH').max = Math.min(24 * 18, Math.floor(maxCells / 8) * 18);
-    $('cvHint').textContent = '可调（12 的倍数 × 18 的倍数）。上限：OSD 属性区 ' + maxCells +
-      ' 格、行 ≤ 24。放大超过原尺寸时，实际屏幕 OSD 窗口由固件设定，可能被裁剪；缩小始终安全。';
+    S.cvHint = { tpl: '可调（12 的倍数 × 18 的倍数）。上限：OSD 属性区 {c} 格、行 ≤ 24。放大超过原尺寸时，实际屏幕 OSD 窗口由固件设定，可能被裁剪；缩小始终安全。', vars: { c: maxCells } };
+    $('cvHint').textContent = __tf(S.cvHint.tpl, S.cvHint.vars);
   }
   $('lbColor').style.display = hasPal ? '' : 'none';
   $('ckColor').checked = hasPal;
@@ -152,7 +158,7 @@ function onFirmware(bytes, name, path) {
       ? '数据流重写 + 字库块（新字模映射到原 logo 槽位），其余原样'
       : isStr
         ? '仅字库块（字符串表原样保留），约 ' + (g.compBytes + 16) + ' B / ' + bytes.length + ' B'
-        : 'MAP ' + g.mapLen + 'B + 字库块，共约 ' + (g.mapLen + g.compBytes + 16) + ' B / ' + bytes.length + ' B'],
+        : 'MAP 表+字库（原位）,共约 ' + (g.mapLen + g.compBytes + 16) + ' B / ' + bytes.length + ' B'],
   ].filter(Boolean);
   infoRows(rows);
   // 写入颜色（记录流型）：颜色平面的 LUT 索引，默认沿用原 logo 主色
@@ -163,7 +169,7 @@ function onFirmware(bytes, name, path) {
     const order = [main].concat(Array.from({ length: g.palette.length }, (_, i) => i).filter(i => i !== main));
     $('selInkColor').innerHTML = order.map(i => {
       const c = g.palette[i];
-      return `<option value="${i}"${i === main ? ' selected' : ''} style="background:${hexCol(c)};color:${inkTxt(c)}">idx${i} · ${hexCol(c)}${i === main ? '（原 logo 主色）' : ''}</option>`;
+      return `<option value="${i}"${i === main ? ' selected' : ''} style="background:${hexCol(c)};color:${inkTxt(c)}">idx${i} · ${hexCol(c)}${i === main ? __t('（原 logo 主色）') : ''}</option>`;
     }).join('');
     $('rowInkColor').style.display = '';
     updateInkChip();
@@ -177,7 +183,7 @@ function onFirmware(bytes, name, path) {
   drawOrig();
   refreshStats();
   $('btnApply').disabled = false;
-  toast('已识别 logo：' + g.rows + '×' + g.cols + ' 网格，' + g.glyphCount + ' 字模');
+  toast(__tf('已识别 logo：{r}×{c} 网格，{n} 字模', { r: g.rows, c: g.cols, n: g.glyphCount }));
 }
 
 function noLogoFound(det) {
@@ -209,8 +215,8 @@ function drawOrig() {
       { polarity: S.polarity, fg: S.fgc, bg: S.bgc, scale: z });
   const cv = $('cvOrig'); cv.width = img.w; cv.height = img.h;
   cv.getContext('2d').putImageData(new ImageData(img.data, img.w, img.h), 0, 0);
-  $('origMeta').textContent = g.rows + '×' + g.cols + ' 网格 · ' + img.w + '×' + img.h + 'px · ' + z + 'x'
-    + (colorMode ? ' · 彩色（按固件调色板）' : '');
+  $('origMeta').textContent = g.rows + '×' + g.cols + __t('网格 · ') + img.w + '×' + img.h + 'px · ' + z + 'x'
+    + (colorMode ? __t(' · 彩色（按固件调色板）') : '');
 }
 
 /* ------------------------------------------------ 新 logo 位图 */
@@ -449,7 +455,7 @@ function genText(showToast = true) {
     else S.cellColors = null;
     setInk(ink);
     S.txtEdit = true; updHistBtns();
-    if (showToast) toast('文字已叠加（新增 ' + added + ' px），可直接拖动 / 缩放；按 Enter 固定文字');
+    if (showToast) toast(__tf('文字已叠加（新增 {n} px），可直接拖动 / 缩放；按 Enter 固定文字', { n: added }));
   } else {
     S.baseInk = null; S.baseCC = null;
     if (canColor() && S.writeColor != null) S.cellColors = new Uint8Array(S.rows * S.cols).fill(S.writeColor);
@@ -554,7 +560,7 @@ function genImage() {
     if (canColor()) computeCellColors(idata);
   }
   paintInkAll(); drawNew(); refreshStats();
-  toast('图片 Logo 已生成' + (S.keepColor && canColor() ? '（彩色已按格匹配调色板）' : ''));
+  toast(__t('图片 Logo 已生成') + (S.keepColor && canColor() ? __t('（彩色已按格匹配调色板）') : ''));
 }
 $('btnGenText').onclick = () => { pushHistory(); genText(); };
 $('btnGenImg').onclick = () => { pushHistory(); genImage(); };
@@ -728,7 +734,7 @@ function paintAt(e) {
     if (!S.cellColors) {
       S.cellColors = new Uint8Array(S.rows * S.cols).fill(S.writeColor);
       S.keepColor = true; $('ckKeepColor').checked = true;
-      toast('画笔颜色 = 写入颜色 ' + hexCol(g.palette[S.writeColor]) + '，换选颜色可分区域上色', 2800);
+      toast(__tf('画笔颜色 = 写入颜色 {c}，换选颜色可分区域上色', { c: hexCol(g.palette[S.writeColor]) }), 2800);
     }
     cc = S.cellColors;
   }
@@ -769,12 +775,12 @@ function doStats() {
   if (g.type === 'recordstream') {
     const sLimit = g.streamEnd - g.streamOff, fLimit = g.blockEnd - g.fontOff;
     const colors = (S.keepColor && S.cellColors) ? S.cellColors : null;
-    $('stLimit').textContent = '流 ' + sLimit + ' B + 字库 ' + fLimit + ' B';
+    $('stLimit').textContent = __tf('流 {s} B + 字库 {f} B', { s: sLimit, f: fLimit });
     if (!built.ok) {
-      $('stTiles').innerHTML = '<span style="color:var(--bad)">' + built.unique + ' &gt; 255 超限</span>';
+      $('stTiles').innerHTML = __tf('{u} &gt; 255 超限', { u: built.unique });
       $('stComp').textContent = '-';
-      $('stPlan').innerHTML = '<span style="color:var(--bad)">字模数超上限</span>';
-      $('planHint').textContent = '唯一字模超过 255 个。请降低图片细节 / 关闭抖动，或提高阈值减少噪点。';
+      $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('字模数超上限') + '</span>';
+      $('planHint').textContent = __t('唯一字模超过 255 个。请降低图片细节 / 关闭抖动，或提高阈值减少噪点。');
       $('btnApply').disabled = true; return;
     }
     const plan = RTDLogo.planRecordStream({
@@ -782,36 +788,36 @@ function doStats() {
       rows: RR, cols: CC, color: (S.writeColor != null ? S.writeColor : g.inkColor), base: g.base, osdw: CC, fontOff: g.fontOff,
       colors
     });
-    $('stTiles').innerHTML = built.unique + ' <span style="color:var(--tx2)">/ ' + (plan.avail ? plan.avail : g.glyphCount) + ' 可用槽位</span>';
+    $('stTiles').innerHTML = __tf('{u} <span style="color:var(--tx2)">/ {a} 可用槽位</span>', { u: built.unique, a: (plan.avail ? plan.avail : g.glyphCount) });
     if (!plan.ok) {
-      const why = plan.reason === 'no-blank-glyph' ? '字库里找不到空白字模作为背景格'
-        : plan.reason === 'unique-tiles-overflow' ? '唯一字模 ' + plan.unique + ' 超过可用槽位 ' + plan.avail
-        : plan.reason === 'canvas-overflow' ? '画布超出 OSD 属性区（上限 ' + plan.avail + ' 格）'
+      const why = plan.reason === 'no-blank-glyph' ? __t('字库里找不到空白字模作为背景格')
+        : plan.reason === 'unique-tiles-overflow' ? __tf('唯一字模 {u} 超过可用槽位 {a}', { u: plan.unique, a: plan.avail })
+        : plan.reason === 'canvas-overflow' ? __tf('画布超出 OSD 属性区（上限 {a} 格）', { a: plan.avail })
         : plan.reason;
       $('stComp').textContent = '-';
       $('stPlan').innerHTML = '<span style="color:var(--bad)">' + why + '</span>';
-      $('planHint').textContent = '请简化图案（减少细节 / 提高吸附阈值）。';
+      $('planHint').textContent = __t('请简化图案（减少细节 / 提高吸附阈值）。');
       $('btnApply').disabled = true; return;
     }
     const fBytes = plan.fontBytes;
     S.blk = plan.stream;
-    $('stComp').innerHTML = '流 ' + plan.stream.length + ' B + 字库 ' + fBytes + ' B ' +
-      ((plan.stream.length <= sLimit && fBytes <= fLimit) ? '<span style="color:var(--ok)">✓</span>' : '<span style="color:var(--bad)">超预算</span>');
+    $('stComp').innerHTML = __tf('流 {s} B + 字库 {f} B ', { s: plan.stream.length, f: fBytes }) +
+      ((plan.stream.length <= sLimit && fBytes <= fLimit) ? '<span style="color:var(--ok)">✓</span>' : '<span style="color:var(--bad)">' + __t('超预算') + '</span>');
     if (plan.stream.length > sLimit) {
-      $('stPlan').innerHTML = '<span style="color:var(--bad)">数据流超预算</span>';
-      $('planHint').textContent = '新数据流 ' + plan.stream.length + ' B 超过原流预算 ' + sLimit + ' B。请简化图案（空白多、笔画成块会显著减小数据流）。';
+      $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('数据流超预算') + '</span>';
+      $('planHint').textContent = __tf('新数据流 {s} B 超过原流预算 {l} B。请简化图案（空白多、笔画成块会显著减小数据流）。', { s: plan.stream.length, l: sLimit });
       $('btnApply').disabled = true; return;
     }
     if (fBytes > fLimit) {
-      $('stPlan').innerHTML = '<span style="color:var(--bad)">字库块放不下</span>';
-      $('planHint').textContent = '新字库 ' + fBytes + ' B 超过原块预算 ' + fLimit + ' B。请简化图案减少唯一字模。';
+      $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('字库块放不下') + '</span>';
+      $('planHint').textContent = __tf('新字库 {f} B 超过原块预算 {l} B。请简化图案减少唯一字模。', { f: fBytes, l: fLimit });
       $('btnApply').disabled = true; return;
     }
     S.plan = { relocate: false };
-    $('stPlan').innerHTML = '<span style="color:var(--ok)">原地写入 @' + HX(g.streamOff) + ' + 字库 @' + HX(g.fontOff) + (plan.mode === 'shrink' ? ' · 收缩模式' : '') + '</span>';
+    $('stPlan').innerHTML = __tf('<span style="color:var(--ok)">原地写入 @{a} + 字库 @{f}{m}</span>', { a: HX(g.streamOff), f: HX(g.fontOff), m: plan.mode === 'shrink' ? __t(' · 收缩模式') : '' });
     $('planHint').textContent = plan.mode === 'shrink'
-      ? '字库放不下完整内容，已收缩为新画面专用字库，并等长重映射尾部动画的字模引用（' + plan.animPatches.length + ' 处）。'
-      : '数据流与字库均原地重写，新字模映射到原 logo 槽位，其余固件字节不动。';
+      ? __tf('字库放不下完整内容，已收缩为新画面专用字库，并等长重映射尾部动画的字模引用（{n} 处）。', { n: plan.animPatches.length })
+      : __t('数据流与字库均原地重写，新字模映射到原 logo 槽位，其余固件字节不动。');
     $('btnApply').disabled = false;
     return;
   }
@@ -823,36 +829,38 @@ function doStats() {
   const limit = g.blockEnd - g.fontOff;
   const uniqMax = g.type === 'stringref' ? g.cols : 255;
   $('stTiles').innerHTML = eff.ok ? eff.unique + ' <span style="color:var(--tx2)">/ ' + uniqMax + '</span>' :
-    '<span style="color:var(--bad)">' + eff.unique + ' &gt; 255 超限</span>';
+    __tf('{u} &gt; 255 超限', { u: eff.unique });
   if (!eff.ok) {
     $('stComp').textContent = '-'; $('stLimit').textContent = limit + ' B';
-    $('stPlan').innerHTML = '<span style="color:var(--bad)">字模数超上限</span>';
-    $('planHint').textContent = '唯一字模超过 255 个（MAP 表每格只有 1 字节索引）。请在图片模式降低细节 / 关闭抖动，或提高阈值减少噪点。';
+    $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('字模数超上限') + '</span>';
+    $('planHint').textContent = __t('唯一字模超过 255 个（MAP 表每格只有 1 字节索引）。请在图片模式降低细节 / 关闭抖动，或提高阈值减少噪点。');
     $('btnApply').disabled = true; return;
   }
   const blk = RTDLogo.encodeBlock(eff.stored);
   S.blk = blk;
-  $('stComp').innerHTML = blk.length + ' B ' + (blk.length <= limit ? '<span style="color:var(--ok)">✓</span>' : '<span style="color:var(--warn)">&gt; 原地 ' + limit + 'B</span>');
-  $('stLimit').textContent = limit + ' B（原地）';
+  $('stComp').innerHTML = blk.length + ' B ' + (blk.length <= limit ? '<span style="color:var(--ok)">✓</span>' : '<span style="color:var(--warn)">&gt; ' + __tf('{l} B（原地）', { l: limit }) + '</span>');
+  $('stLimit').textContent = __tf('{l} B（原地）', { l: limit });
   const bankFrom = g.fontOff & ~0x7fff, bankTo = bankFrom + 0x8000;
   if (blk.length <= limit) {
     S.plan = { relocate: false };
-    $('stPlan').innerHTML = '<span style="color:var(--ok)">原地写入 @' + HX(g.fontOff) + '</span>';
-    $('planHint').textContent = '新字库比原来' + (limit - blk.length >= 0 ? '小 ' + (limit - blk.length) + ' B' : '') + '，无需移动任何代码。';
+    $('stPlan').innerHTML = __tf('<span style="color:var(--ok)">原地写入 @{a}</span>', { a: HX(g.fontOff) });
+    $('planHint').textContent = (limit - blk.length > 0)
+      ? __tf('新字库比原来小 {d} B，无需移动任何代码。', { d: limit - blk.length })
+      : __t('新字库与原块同大小，无需移动任何代码。');
   } else if ($('ckReloc').checked) {
     const runs = RTDLogo.freeRuns(S.fw, bankFrom, bankTo, blk.length + 32);
     if (runs.length) {
       S.plan = { relocate: true, target: runs[0].off };
-      $('stPlan').innerHTML = '<span style="color:var(--warn)">重定位 @' + HX(runs[0].off) + '</span>';
-      $('planHint').textContent = '原地放不下，将把字库挪到同 bank 空闲区 ' + HX(runs[0].off) + '（' + runs[0].len + ' B 空闲），并改写字库加载指令的地址立即数。';
+      $('stPlan').innerHTML = __tf('<span style="color:var(--warn)">重定位 @{a}</span>', { a: HX(runs[0].off) });
+      $('planHint').textContent = __tf('原地放不下，将把字库挪到同 bank 空闲区 {a}（{l} B 空闲），并改写字库加载指令的地址立即数。', { a: HX(runs[0].off), l: runs[0].len });
     } else {
-      $('stPlan').innerHTML = '<span style="color:var(--bad)">空间不足</span>';
-      $('planHint').textContent = '原地与同 bank 空闲区都放不下 ' + blk.length + ' B。请简化图案（减少细节/提高吸附）。';
+      $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('空间不足') + '</span>';
+      $('planHint').textContent = __tf('原地与同 bank 空闲区都放不下 {n} B。请简化图案（减少细节/提高吸附）。', { n: blk.length });
       $('btnApply').disabled = true; return;
     }
   } else {
-    $('stPlan').innerHTML = '<span style="color:var(--bad)">超出原地预算</span>';
-    $('planHint').textContent = '可勾选「自动重定位」，或简化图案。';
+    $('stPlan').innerHTML = '<span style="color:var(--bad)">' + __t('超出原地预算') + '</span>';
+    $('planHint').textContent = __t('可勾选「自动重定位」，或简化图案。');
     $('btnApply').disabled = true; return;
   }
   $('btnApply').disabled = false;
@@ -867,28 +875,28 @@ $('btnApply').onclick = () => {
   const target = inPlace ? g.fontOff : plan.target;
   const resized = g.type === 'recordstream' && (S.rows !== g.rows || S.cols !== g.cols);
   openModal(`
-    <h2>⚠ 确认替换开机 Logo</h2>
-    <div class="kv">固件：<b>${S.fwName}</b>（${S.fw.length} 字节，改后大小不变）</div>
-    ${resized ? `<div class="kv">画布：${g.cols * 12}×${g.rows * 18} → <b>${S.tw}×${S.th}</b> px（若实机 OSD 窗口较小，放大部分可能被裁剪）</div>` : ''}
-    ${S.keepColor && S.cellColors ? `<div class="kv">颜色：逐格写入图片匹配色（背景格 = 调色板 idx${S.bgIdx}）</div>` : ''}
+    <h2>${__t('⚠ 确认替换开机 Logo')}</h2>
+    <div class="kv">${__tf('固件：<b>{n}</b>（{s} 字节，改后大小不变）', { n: S.fwName, s: S.fw.length })}</div>
+    ${resized ? `<div class="kv">${__tf('画布：{w1}×{h1} → <b>{w2}×{h2}</b> px（若实机 OSD 窗口较小，放大部分可能被裁剪）', { w1: g.cols * 12, h1: g.rows * 18, w2: S.tw, h2: S.th })}</div>` : ''}
+    ${S.keepColor && S.cellColors ? `<div class="kv">${__tf('颜色：逐格写入图片匹配色（背景格 = 调色板 idx{i}）', { i: S.bgIdx })}</div>` : ''}
     ${g.type === 'recordstream'
-      ? `<div class="kv">① OSD 数据流：<b>${HX(g.streamOff)}</b> → ${HX(g.streamEnd)}（预算 ${g.streamEnd - g.streamOff} B）→ 重写为新画面的记录流</div>
-    <div class="kv">② 字库块：<b>${HX(g.fontOff)}</b>（预算 ${g.blockEnd - g.fontOff} B）→ 新字模映射到原 logo 槽位后 VLC 重编码写入</div>`
+      ? `<div class="kv">${__tf('① OSD 数据流：<b>{a}</b> → {b}（预算 {n} B）→ 重写为新画面的记录流', { a: HX(g.streamOff), b: HX(g.streamEnd), n: g.streamEnd - g.streamOff })}</div>
+    <div class="kv">${__tf('② 字库块：<b>{a}</b>（预算 {n} B）→ 新字模映射到原 logo 槽位后 VLC 重编码写入', { a: HX(g.fontOff), n: g.blockEnd - g.fontOff })}</div>`
       : g.type === 'stringref'
-        ? `<div class="kv">① 字符串索引表：<b>${HX(g.strOff)}</b>（${g.cols} 项）→ <b>原样保留</b>，新画面写入其引用的字模号</div>`
-        : `<div class="kv">① MAP 表：<b>${HX(g.mapOff)}</b> 起 ${g.mapLen} 字节 → 重写为新画面拼图</div>`}
-    ${g.type !== 'recordstream' ? `<div class="kv">② 字库块：${inPlace
-      ? `<b>${HX(g.fontOff)}</b> 起原地写入 ${blk.length} 字节（预算 ${g.blockEnd - g.fontOff} B）`
-      : `原地放不下 → 重定位到 <b>${HX(target)}</b> 写入 ${blk.length} 字节，并改写加载指令地址（${RTDLogo.findLoaderRefs(S.fw, g.fontOff).length} 处）`}</div>` : ''}
-    <div class="kv">③ 其余字节：原样保留${g.type === 'recordstream' ? '（含数据流之后的动画记录组）' : ''}</div>
-    <div class="kv">④ 写入后回读校验：${g.type === 'recordstream' ? '重新模拟数据流逐格比对 + 重新解码字库比对（自动执行）' : '重新解码字库并比对（自动执行）'}</div>
-    <div class="note">⚠ 刷机有风险：请务必保留原固件备份。${S.server && S.fwPath
-      ? '点击「直接替换原文件」会先把原文件备份为 <b>.bak-时间戳</b> 再覆盖。'
-      : '将下载新固件文件，原文件不会被改动；刷机前建议先刷「原文件备份」确认可回退。'}</div>
+        ? `<div class="kv">${__tf('① 字符串索引表：<b>{a}</b>（{n} 项）→ <b>原样保留</b>，新画面写入其引用的字模号', { a: HX(g.strOff), n: g.cols })}</div>`
+        : `<div class="kv">${__tf('① MAP 表：<b>{a}</b> 起 {n} 字节 → 重写为新画面拼图', { a: HX(g.mapOff), n: g.mapLen })}</div>`}
+    ${g.type !== 'recordstream' ? `<div class="kv">${__tf('② 字库块：{opt}', { opt: inPlace
+      ? __tf('<b>{a}</b> 起原地写入 {n} 字节（预算 {l} B）', { a: HX(g.fontOff), n: blk.length, l: g.blockEnd - g.fontOff })
+      : __tf('原地放不下 → 重定位到 <b>{a}</b> 写入 {n} 字节，并改写加载指令地址（{c} 处）', { a: HX(target), n: blk.length, c: RTDLogo.findLoaderRefs(S.fw, g.fontOff).length }) })}</div>` : ''}
+    <div class="kv">${__tf('③ 其余字节：原样保留{ext}', { ext: g.type === 'recordstream' ? __t('（含数据流之后的动画记录组）') : '' })}</div>
+    <div class="kv">${__tf('④ 写入后回读校验：{m}', { m: g.type === 'recordstream' ? __t('重新模拟数据流逐格比对 + 重新解码字库比对（自动执行）') : __t('重新解码字库并比对（自动执行）') })}</div>
+    <div class="note">${__t('⚠ 刷机有风险：请务必保留原固件备份。')}${S.server && S.fwPath
+      ? __t('点击「直接替换原文件」会先把原文件备份为 <b>.bak-时间戳</b> 再覆盖。')
+      : __t('将下载新固件文件，原文件不会被改动；刷机前建议先刷「原文件备份」确认可回退。')}</div>
     <div class="btns">
-      <button onclick="closeModal()">取消</button>
-      ${S.server && S.fwPath ? `<button class="primary" onclick="doApply(true)">直接替换原文件</button>` : ''}
-      <button class="primary" onclick="doApply(false)">生成新固件${S.server && S.fwPath ? '（下载）' : ''}</button>
+      <button onclick="closeModal()">${__t('取消')}</button>
+      ${S.server && S.fwPath ? `<button class="primary" onclick="doApply(true)">${__t('直接替换原文件')}</button>` : ''}
+      <button class="primary" onclick="doApply(false)">${__t('生成新固件')}${S.server && S.fwPath ? __t('（下载）') : ''}</button>
     </div>`);
 };
 window.closeModal = closeModal;
@@ -910,21 +918,21 @@ window.doApply = function (writeBack) {
       allowRelocate: $('ckReloc').checked,
       bankFrom: g.fontOff & ~0x7fff, bankTo: (g.fontOff & ~0x7fff) + 0x8000
     });
-  if (!res.ok) { closeModal(); toast('写入失败：' + res.reason, 4000); return; }
+  if (!res.ok) { closeModal(); toast(__tf('写入失败：{r}', { r: res.reason }), 4000); return; }
   S.patched = res.bytes; window.__lastReport = res.report;   // 便于外部校验/调试
-  const outName = S.fwName.replace(/\.bin$/i, '') + '_新logo.bin';
+  const outName = S.fwName.replace(/\.bin$/i, '') + '_newlogo.bin';
   const done = (msg) => openModal(`
-    <h2 style="color:var(--ok)">✓ 新固件已生成</h2>
-    <div class="kv">回读校验：<b style="color:var(--ok)">${res.report.verified ? '通过（解码后与设计完全一致）' : '失败'}</b></div>
+    <h2 style="color:var(--ok)">${__t('✓ 新固件已生成')}</h2>
+    <div class="kv">${__tf('回读校验：{r}', { r: res.report.verified ? __t('通过（解码后与设计完全一致）') : __t('失败') })}</div>
     ${g.type === 'recordstream'
-      ? `<div class="kv">数据流：${HX(res.report.placedAt)} · ${res.report.streamBytes} 字节（预算 ${res.report.streamLimit} B）</div>
-    <div class="kv">字库块：${HX(g.fontOff)} · ${res.report.fontBytes} 字节（预算 ${res.report.fontLimit} B）</div>`
-      : `<div class="kv">字库写入：${HX(res.report.placedAt)}${res.report.relocated ? '（重定位，加载指令已改写）' : '（原地）'} · ${res.report.blockBytes} 字节</div>`}
+      ? `<div class="kv">${__tf('数据流：{a} · {s} 字节（预算 {l} B）', { a: HX(res.report.placedAt), s: res.report.streamBytes, l: res.report.streamLimit })}</div>
+    <div class="kv">${__tf('字库块：{a} · {s} 字节（预算 {l} B）', { a: HX(g.fontOff), s: res.report.fontBytes, l: res.report.fontLimit })}</div>`
+      : `<div class="kv">${__tf('字库写入：{a}{m} · {s} 字节', { a: HX(res.report.placedAt), m: res.report.relocated ? __t('（重定位，加载指令已改写）') : __t('（原地）'), s: res.report.blockBytes })}</div>`}
     ${msg ? `<div class="kv">${msg}</div>` : ''}
-    <div class="note">下一步：用编程器 / ISP 工具把新 .bin 写回主板。若开机异常，刷回备份的原固件即可恢复。</div>
+    <div class="note">${__t('下一步：用编程器 / ISP 工具把新 .bin 写回主板。若开机异常，刷回备份的原固件即可恢复。')}</div>
     <div class="btns">
-      <button onclick="closeModal()">关闭</button>
-      <button class="primary" id="btnDl">下载新固件</button>
+      <button onclick="closeModal()">${__t('关闭')}</button>
+      <button class="primary" id="btnDl">${__t('下载新固件')}</button>
     </div>`) || setTimeout(() => {
       $('btnDl').onclick = () => download(S.patched, outName);
       if (!S.server) $('btnDl').click();
@@ -932,9 +940,9 @@ window.doApply = function (writeBack) {
   if (writeBack && S.fwPath) {
     apiSave(S.fwPath, res.bytes).then(r => {
       closeModal();
-      if (r.ok) done('已直接替换原文件：<b>' + S.fwPath + '</b><br>备份：' + (r.backup || '-'));
-      else { toast('写回失败：' + (r.error || '?'), 4000); download(S.patched, outName); }
-    }).catch(() => { closeModal(); toast('写回失败，已转为下载', 4000); download(S.patched, outName); });
+      if (r.ok) done(__tf('已直接替换原文件：<b>{p}</b><br>备份：{b}', { p: S.fwPath, b: r.backup || '-' }));
+      else { toast(__tf('写回失败：{e}', { e: r.error || '?' }), 4000); download(S.patched, outName); }
+    }).catch(() => { closeModal(); toast(__t('写回失败，已转为下载'), 4000); download(S.patched, outName); });
   } else {
     done('');
     setTimeout(() => { $('btnDl').onclick = () => download(S.patched, outName); if (!S.server) $('btnDl').click(); }, 0);
@@ -944,7 +952,7 @@ function download(bytes, name) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
   a.download = name; a.click();
-  toast('已下载：' + name);
+  toast(__tf('已下载：{n}', { n: name }));
 }
 window.download = download;
 
@@ -968,26 +976,26 @@ $('btnServerOpen').onclick = serverBrowse;
 async function serverBrowse() {
   let cur = '';
   const roots = S.server ? await apiRoots().catch(() => ({ roots: [] })) : { roots: [] };
-  openModal(`<h2 style="color:var(--acc)">从电脑打开固件</h2>
-    <div class="row"><input type="text" id="brPath" style="flex:1" placeholder="输入文件夹路径，如 D:\\Users\\...\\Downloads" value="${cur}">
-    <button id="brGo">打开</button></div>
+  openModal(`<h2 style="color:var(--acc)">${__t('从电脑打开固件')}</h2>
+    <div class="row"><input type="text" id="brPath" style="flex:1" placeholder="${__t('输入文件夹路径，如 D:\\Users\\...\\Downloads')}" value="${cur}">
+    <button id="brGo">${__t('打开')}</button></div>
     <div id="brList" style="max-height:50vh;overflow:auto;margin-top:8px"></div>
-    <div class="btns"><button onclick="closeModal()">取消</button></div>`);
+    <div class="btns"><button onclick="closeModal()">${__t('取消')}</button></div>`);
   const go = async d => {
     cur = d; $('brPath').value = d;
     const res = await apiList(d).catch(e => ({ error: String(e) }));
     if (res.error) { $('brList').innerHTML = '<div class="hint">' + res.error + '</div>'; return; }
     $('brList').innerHTML =
-      (res.dir + '  <span class="hint">上级：<a href="#" id="brUp">..</a></span><hr style="border-color:var(--line)">' +
+      (res.dir + '  <span class="hint">' + __t('上级：<a href="#" id="brUp">..</a>') + '</span><hr style="border-color:var(--line)">' +
         res.dirs.map(x => `<a href="#" class="brd" data-p="${x.path}">📁 ${x.name}</a>`).join('<br>') +
         '<hr style="border-color:var(--line)">' +
         (res.bins.length ? res.bins.map(x => `<a href="#" class="brf" data-p="${x.path}">📄 ${x.name} <span class="hint">(${x.size} B)</span></a>`).join('<br>')
-          : '<span class="hint">此目录没有 .bin 文件</span>'));
+          : '<span class="hint">' + __t('此目录没有 .bin 文件') + '</span>'));
     $('brList').querySelectorAll('.brd').forEach(a => a.onclick = ev => { ev.preventDefault(); go(a.dataset.p); });
     $('brList').querySelectorAll('.brf').forEach(a => a.onclick = async ev => {
       ev.preventDefault();
       try { const b = await apiLoad(a.dataset.p); closeModal(); onFirmware(b, a.dataset.p.split(/[\\/]/).pop(), a.dataset.p); }
-      catch (e) { toast('读取失败：' + e, 4000); }
+      catch (e) { toast(__tf('读取失败：{e}', { e }), 4000); }
     });
     const up = $('brUp'); if (up) up.onclick = ev => { ev.preventDefault(); go(res.parent || cur); };
   };
@@ -1054,7 +1062,7 @@ function applyCanvas() {
   S.cellColors = null; S.imgX = 0; S.imgY = 0;
   S.baseInk = null; S.baseCC = null;
   setInk(ink);
-  toast('画布已调整为 ' + S.tw + '×' + S.th + ' px（' + rows + '×' + cols + ' 格）');
+  toast(__tf('画布已调整为 {w}×{h} px（{r}×{c} 格）', { w: S.tw, h: S.th, r: rows, c: cols }));
 }
 $('rgImgZoom').addEventListener('pointerdown', pushHistory);
 $('rgImgZoom').addEventListener('input', () => {
@@ -1082,7 +1090,7 @@ window.addEventListener('drop', e => {
     const im = new Image();
     im.onload = () => { S.imgEl = im; $('imgName').textContent = f.name.slice(0, 22); tab('img'); genImage(); };
     im.src = URL.createObjectURL(f);
-  } else toast('请拖入 .bin 固件或图片');
+  } else toast(__t('请拖入 .bin 固件或图片'));
 });
 
 /* ------------------------------------------------ 初始化 */
@@ -1095,13 +1103,28 @@ if (S.server) {
   $('btnServerOpen').style.display = '';
   $('btnExit').style.display = '';
   $('btnExit').onclick = async () => {
-    if (!confirm('退出 RTD 开机 Logo 工作室？\n\n已写入的固件不受影响（备份文件也保留）。\n退出后本页面失效，关掉即可。')) return;
+    if (!confirm(__t('退出 RTD 开机 Logo 工作室？\n\n已写入的固件不受影响（备份文件也保留）。\n退出后本页面失效，关掉即可。'))) return;
     try { await fetch('/api/exit'); } catch (e) { }
     document.getElementById('modal').style.display = 'none';
     document.body.innerHTML = '<div style="padding:48px;font:15px/2 \'Microsoft YaHei\',sans-serif;color:#dbe4f0">' +
-      '<h2 style="color:#4ea1ff;margin-bottom:12px">程序已退出</h2>现在可以关闭这个页面了。</div>';
+      '<h2 style="color:#4ea1ff;margin-bottom:12px">' + __t('程序已退出') + '</h2>' + __t('现在可以关闭这个页面了。') + '</div>';
   };
   // 关页 / 刷新 → 通知后台收工（25 秒内若没有新请求，后台自动退出）
   window.addEventListener('beforeunload', () => { try { navigator.sendBeacon('/api/bye'); } catch (e) { } });
 }
 infoRows([['状态', '请先打开固件文件（.bin）'], ['实测', 'RTD2270CLW（= RTD2270C，与 RTD2270 固件不通用）· 板 RTD270CLW-R10.1，其他型号请自行测试 · 支持：静态 MAP 型 / 串引用型 / OSD 记录流型开机 logo']]);
+
+/* ------------------------------------------------ 语言切换（中 / EN / RU） */
+(function initLang() {
+  const sel = $('selLang');
+  const saved = (window.__I18N && window.__I18N.lang) || 'zh';
+  sel.value = saved;
+  if (saved !== 'zh') window.__I18N.apply(saved);        // 非中文：静态 DOM 立即翻译
+  sel.addEventListener('change', () => window.__I18N.apply(sel.value));
+  // 语言切换后重渲染动态区域（信息表 / 统计 / 元信息 / 画布提示）
+  window.addEventListener('rtdlang', () => {
+    if (infoRows.last) infoRows(infoRows.last);
+    if (S.cvHint) $('cvHint').textContent = __tf(S.cvHint.tpl, S.cvHint.vars);
+    if (S.g) { drawOrig(); refreshStats(); }
+  });
+})();

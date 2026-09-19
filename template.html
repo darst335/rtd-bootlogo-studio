@@ -106,11 +106,16 @@ canvas{image-rendering:pixelated;background:#000}
 </head>
 <body>
 <header>
-  <h1>RTD <b>开机 Logo</b> 工作室</h1>
+  <h1 data-i18n="i_heading">RTD <b>开机 Logo</b> 工作室</h1>
   <span class="chip" id="chipSign" title="作者：darst335（与 AI 结对开发）· 连点 3 次查看归属声明" style="cursor:pointer;user-select:none">© darst335</span>
   <span class="chip" id="chipFw">未打开固件</span>
   <span class="chip" id="chipMode" style="display:none"></span>
   <div class="spacer"></div>
+  <select id="selLang" title="Language / 语言 / Язык" style="width:auto;padding:5px 6px">
+    <option value="zh">中文</option>
+    <option value="en">English</option>
+    <option value="ru">Русский</option>
+  </select>
   <button id="btnServerOpen" style="display:none">从电脑打开…</button>
   <button id="btnOpen" class="primary">打开固件 (.bin)</button>
   <button id="btnExit" style="display:none" title="退出后台程序（关掉页面也会自动退出）">退出程序</button>
@@ -128,7 +133,7 @@ canvas{image-rendering:pixelated;background:#000}
         <label style="min-width:0"><input type="radio" name="pol" value="1" checked> bit=1 是墨迹（常规）</label>
         <label style="min-width:0"><input type="radio" name="pol" value="0"> bit=0 是墨迹（反相库）</label>
       </div>
-      <div class="hint">极性决定 1bpp 字模哪一位是笔画。已按硬件约定自动判定，预览与实机不符时再切换。</div>
+      <div class="hint" data-i18n="i_hint_pol">极性决定 1bpp 字模哪一位是笔画。已按硬件约定自动判定，预览与实机不符时再切换。</div>
     </div>
 
     <div class="card">
@@ -166,7 +171,7 @@ canvas{image-rendering:pixelated;background:#000}
           <input type="range" id="rgTxtX" min="-100" max="100" value="0" style="width:86px" title="水平位置"><span class="mono" id="vTxtX">0</span>
           <input type="range" id="rgTxtY" min="-100" max="100" value="0" style="width:86px" title="垂直位置"><span class="mono" id="vTxtY">0</span>
         </div>
-        <div class="hint" style="margin-top:-3px">叠加模式（PS 式编辑）：点「生成文字 Logo」后，<b>直接在画布上拖动文字</b>即可移动位置；拖<b>文字右下角的蓝色方块</b>可拉伸缩放大小；鼠标悬停在文字上<b>滚轮</b>也能缩放。调整满意后<b>按 Enter</b>（或点画布右上角「✓ 固定文字」）固定文字、退出编辑；之后可直接用画笔修改，<b>双击文字</b>可重新进入编辑。位置 / 高度滑块与拖动实时同步，误操作按 <b>Ctrl+Z</b> 撤销（画布右上角也有撤销 / 重做按钮）。按住 <b>Alt</b> 可在文字区域内使用画笔（仅编辑态需要）。</div>
+        <div class="hint" data-i18n="i_hint_txt" style="margin-top:-3px">叠加模式（PS 式编辑）：点「生成文字 Logo」后，<b>直接在画布上拖动文字</b>即可移动位置；拖<b>文字右下角的蓝色方块</b>可拉伸缩放大小；鼠标悬停在文字上<b>滚轮</b>也能缩放。调整满意后<b>按 Enter</b>（或点画布右上角「✓ 固定文字」）固定文字、退出编辑；之后可直接用画笔修改，<b>双击文字</b>可重新进入编辑。位置 / 高度滑块与拖动实时同步，误操作按 <b>Ctrl+Z</b> 撤销（画布右上角也有撤销 / 重做按钮）。按住 <b>Alt</b> 可在文字区域内使用画笔（仅编辑态需要）。</div>
         <div class="row">
           <label>阈值</label>
           <input type="range" id="rgTh1" min="20" max="235" value="128"><span class="mono" id="vTh1">128</span>
@@ -197,7 +202,7 @@ canvas{image-rendering:pixelated;background:#000}
           <label style="min-width:0"><input type="checkbox" id="ckKeepColor"> 保留图片颜色</label>
           <span class="hint">按格自动匹配调色板</span>
         </div>
-        <div class="hint" style="margin-top:2px">图片导入后：在右侧「新 Logo」画布上<b>拖动</b>可移动图片位置，<b>滚轮</b>或滑块缩放，随时点「生成图片 Logo」重新生成。勾选「保留图片颜色」时，阈值变为<b>与背景色的色差</b>（自动取图片自身四角作背景色，拖动/缩放不会引起颜色跳变）。反相 / 抖动勾选后立即生效；彩色模式下抖动按色差做误差扩散。</div>
+        <div class="hint" data-i18n="i_hint_img" style="margin-top:2px">图片导入后：在右侧「新 Logo」画布上<b>拖动</b>可移动图片位置，<b>滚轮</b>或滑块缩放，随时点「生成图片 Logo」重新生成。勾选「保留图片颜色」时，阈值变为<b>与背景色的色差</b>（自动取图片自身四角作背景色，拖动/缩放不会引起颜色跳变）。反相 / 抖动勾选后立即生效；彩色模式下抖动按色差做误差扩散。</div>
         <button class="primary big" id="btnGenImg" style="width:100%;margin-top:8px">生成图片 Logo</button>
       </div>
       <div class="pane" id="panePaint">
@@ -216,7 +221,7 @@ canvas{image-rendering:pixelated;background:#000}
           <button id="btnInkClr" style="flex:1">清空</button>
           <button id="btnInkRestore" style="flex:1">恢复原 Logo</button>
         </div>
-        <div class="hint">直接在右侧「新 Logo」画布上按住拖动即可修改（画布始终可画，无需先点生成）。<b>调色板固件下，画笔 = 「写入颜色」选中的颜色</b>（首次上色会自动勾选「保留图片颜色」），换选颜色即可给导入的图案分区域上色。<b>撤销 / 重做全局可用（Ctrl+Z / Ctrl+Y）</b>：画笔、生成、文字拖动、图片拖动等操作均可回退。</div>
+        <div class="hint" data-i18n="i_hint_paint">直接在右侧「新 Logo」画布上按住拖动即可修改（画布始终可画，无需先点生成）。<b>调色板固件下，画笔 = 「写入颜色」选中的颜色</b>（首次上色会自动勾选「保留图片颜色」），换选颜色即可给导入的图案分区域上色。<b>撤销 / 重做全局可用（Ctrl+Z / Ctrl+Y）</b>：画笔、生成、文字拖动、图片拖动等操作均可回退。</div>
       </div>
     </div>
 
@@ -239,7 +244,7 @@ canvas{image-rendering:pixelated;background:#000}
 
     <div class="card">
       <h3><span class="n">4</span>确认替换</h3>
-      <div class="hint" style="margin-bottom:10px">替换只改 logo 数据（MAP 表 + 字库块），其余字节原样保留，文件总大小不变。刷机需用编程器 / ISP 工具把新 .bin 写回板子。</div>
+      <div class="hint" data-i18n="i_hint_apply" style="margin-bottom:10px">替换只改 logo 数据（MAP 表 + 字库块），其余字节原样保留，文件总大小不变。刷机需用编程器 / ISP 工具把新 .bin 写回板子。</div>
       <button class="primary big" id="btnApply" style="width:100%" disabled>确认替换并生成固件…</button>
     </div>
   </div>
@@ -274,6 +279,9 @@ canvas{image-rendering:pixelated;background:#000}
 
 <script>
 /*__ENGINE__*/
+</script>
+<script>
+/*__I18N__*/
 </script>
 <script>
 /*__UI__*/
