@@ -75,7 +75,8 @@ $('chipSign').onclick = () => {
     toast('「RTD 开机 Logo 工作室」由 darst335 与 AI 结对开发（项目 D335-RTDLOGO）\n'
       + '需求·固件实证·验收：darst335 ｜ 2026-09 ｜ 原创作品，转载请保留署名\n'
       + 'EN: Original work by darst335 (pair-programmed with AI). Keep this notice.\n'
-      + '实测基准：RTD2270CLW（板 RTD270CLW-R10.1）；其他型号未测试，请自行验证'
+      + '实测基准：RTD2270CLW（板 RTD270CLW-R10.1）\n'
+      + '注意：RTD2270 与 RTD2270CLW 是两种芯片，固件不通用（RTD2270C = RTD2270CLW）；其他型号未测试'
       + (s.claim ? '\n校验：' + s.claim : ''), 6000);
   }
 };

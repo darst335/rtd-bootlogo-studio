@@ -11,8 +11,10 @@
  *   AI assistant — not copied from any third-party tool. Keep this notice.
  * ----------------------------------------------------------------------------
  * 实测基准（verified on）：RTD2270CLW 主控 · 驱动板版号 RTD270CLW-R10.1 20.1
- * 注意：RTD2270C 与 RTD2270 固件可能不同；其他型号未测试，请自行验证
- * (RTD2270C firmware may differ from RTD2270; other models untested)
+ * 注意：RTD2270 与 RTD2270CLW 是两种不同芯片，固件不通用（「RTD2270C」
+ * 即指 RTD2270CLW）；其他型号未测试，请自行验证
+ * (RTD2270 and RTD2270CLW are two different chips with incompatible
+ * firmware; "RTD2270C" = RTD2270CLW. Other models untested — self-test)
  * ----------------------------------------------------------------------------
  * 适用：RTD2270 / RTD2660 / RTD2662 系列 Scaler 固件的开机 logo 读写
  * 机制：logo = VLC 压缩字库（12x18 字模）+ 静态 MAP 表（字模索引网格）

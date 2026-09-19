@@ -3,7 +3,7 @@
 > 修改 Realtek RTD2270 / RTD266x 系列显示器 Scaler 固件的开机 Logo —— 直接改 `.bin`，无需编程器知识，改完用编程器刷回即可。
 >
 > **实测基准（Verified on）**：RTD2270CLW 主控，驱动板版号 **RTD270CLW-R10.1 20.1**。
-> ⚠️ RTD2270C 与 RTD2270 的固件布局可能存在差异（RTD2270C firmware may differ from RTD2270），**其他型号未经测试，请自行测试**（Other models are untested — test on your own hardware）。
+> ⚠️ **RTD2270 与 RTD2270CLW 是两种不同芯片，固件不通用**（市面上说的「RTD2270C」就是指 RTD2270CLW，RTD2270C = RTD2270CLW）。**其他型号未经测试，请自行测试**（RTD2270 and RTD2270CLW are two different chips with incompatible firmware; "RTD2270C" is just shorthand for RTD2270CLW. Other models are untested — test on your own hardware）。
 
 <div align="center">
   <img src="docs/hyundai-bootlogo.png" width="420" alt="HYUNDAI 开机画面（从固件中渲染还原）">
@@ -83,7 +83,7 @@ node test-engine.js         # VLC 编解码等基础项
 
 - 刷机有风险，**务必保留原始固件备份**；因刷机造成的任何损失由使用者自行承担
 - 本工具不分发任何固件，仅提供读写能力
-- 本工具仅在 **RTD2270CLW（板卡版号 RTD270CLW-R10.1 20.1）** 一块实机上完整验证。RTD2270C 与 RTD2270 固件可能不一样，**其他所有型号均未测试**，请大家自行测试；刷坏了别怪我们 😃
+- 本工具仅在 **RTD2270CLW（板卡版号 RTD270CLW-R10.1 20.1）** 一块实机上完整验证。**RTD2270 与 RTD2270CLW 是两种不同芯片，固件不通用（RTD2270C 就是 RTD2270CLW）**，**其他所有型号均未测试**，请大家自行测试；刷坏了别怪我们 😃
 - 遇到问题（识别失败、刷后异常等）请到 [GitHub Issues 留言板](../../issues) 反馈，附上固件大小 / 主控型号等信息更易排查
 
 - Flashing firmware is risky. **Always keep a backup of your original firmware.** Any damage caused by flashing is at your own risk.
