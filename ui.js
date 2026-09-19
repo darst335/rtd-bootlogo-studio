@@ -73,7 +73,9 @@ $('chipSign').onclick = () => {
     _signTaps = 0;
     const s = (typeof RTDLogo !== 'undefined' && RTDLogo.SIGNATURE) ? RTDLogo.SIGNATURE : {};
     toast('「RTD 开机 Logo 工作室」由 darst335 与 AI 结对开发（项目 D335-RTDLOGO）\n'
-      + '需求·固件实证·验收：darst335 ｜ 2026-09 ｜ 原创作品，转载请保留署名'
+      + '需求·固件实证·验收：darst335 ｜ 2026-09 ｜ 原创作品，转载请保留署名\n'
+      + 'EN: Original work by darst335 (pair-programmed with AI). Keep this notice.\n'
+      + '实测基准：RTD2270CLW（板 RTD270CLW-R10.1）；其他型号未测试，请自行验证'
       + (s.claim ? '\n校验：' + s.claim : ''), 6000);
   }
 };
@@ -1068,4 +1070,4 @@ if (S.server) {
   // 关页 / 刷新 → 通知后台收工（25 秒内若没有新请求，后台自动退出）
   window.addEventListener('beforeunload', () => { try { navigator.sendBeacon('/api/bye'); } catch (e) { } });
 }
-infoRows([['状态', '请先打开固件文件（.bin）'], ['支持', 'RTD2270/266x · 静态 MAP 型 / 串引用型 / OSD 记录流型开机 logo']]);
+infoRows([['状态', '请先打开固件文件（.bin）'], ['支持', 'RTD2270/266x（实测：RTD2270CLW · 板 RTD270CLW-R10.1，其他型号请自行测试） · 静态 MAP 型 / 串引用型 / OSD 记录流型开机 logo']]);

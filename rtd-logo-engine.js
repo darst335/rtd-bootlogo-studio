@@ -7,6 +7,12 @@
  *   全部格式结论来自对乐华 / HY / MAZON / BUBALUS 四块真实固件的
  *   独立逆向与实物刷机验证。发布、转载请保留本声明。
  *   项目代号：D335-RTDLOGO · 起始日期：2026-09-17
+ *   EN: Original work by darst335 (D335-RTDLOGO), pair-programmed with an
+ *   AI assistant — not copied from any third-party tool. Keep this notice.
+ * ----------------------------------------------------------------------------
+ * 实测基准（verified on）：RTD2270CLW 主控 · 驱动板版号 RTD270CLW-R10.1 20.1
+ * 注意：RTD2270C 与 RTD2270 固件可能不同；其他型号未测试，请自行验证
+ * (RTD2270C firmware may differ from RTD2270; other models untested)
  * ----------------------------------------------------------------------------
  * 适用：RTD2270 / RTD2660 / RTD2662 系列 Scaler 固件的开机 logo 读写
  * 机制：logo = VLC 压缩字库（12x18 字模）+ 静态 MAP 表（字模索引网格）
