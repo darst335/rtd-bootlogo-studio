@@ -84,6 +84,10 @@ input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
 .cwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:
  repeating-conic-gradient(#141920 0% 25%, #10141b 0% 50%) 0 0/24px 24px;border-radius:9px;overflow:auto;border:1px solid var(--line)}
 canvas{image-rendering:pixelated;background:#000}
+#histBar{position:absolute;top:6px;right:6px;display:flex;gap:6px;z-index:5}
+#histBar button{padding:4px 10px;font-size:12px;background:rgba(20,24,32,.85);border:1px solid var(--line);border-radius:6px;cursor:pointer;color:inherit}
+#histBar button:disabled{opacity:.35;cursor:default}
+#histBar #btnCommitTxt{border-color:var(--acc);color:var(--acc);font-weight:600}
 #drop{position:fixed;inset:0;background:rgba(14,17,22,.88);display:none;align-items:center;justify-content:center;z-index:50;font-size:22px;color:var(--acc);border:3px dashed var(--acc);border-radius:16px}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:60}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 26px;width:560px;max-width:92vw;max-height:88vh;overflow-y:auto}
@@ -162,7 +166,7 @@ canvas{image-rendering:pixelated;background:#000}
           <input type="range" id="rgTxtX" min="-100" max="100" value="0" style="width:86px" title="水平位置"><span class="mono" id="vTxtX">0</span>
           <input type="range" id="rgTxtY" min="-100" max="100" value="0" style="width:86px" title="垂直位置"><span class="mono" id="vTxtY">0</span>
         </div>
-        <div class="hint" style="margin-top:-3px">叠加模式（PS 式编辑）：点「生成文字 Logo」后，<b>直接在画布上拖动文字</b>即可移动位置；拖<b>文字右下角的蓝色方块</b>可拉伸缩放大小；鼠标悬停在文字上<b>滚轮</b>也能缩放。位置 / 高度滑块与拖动实时同步，误操作按 <b>Ctrl+Z</b> 撤销。按住 <b>Alt</b> 可在文字区域内使用画笔。</div>
+        <div class="hint" style="margin-top:-3px">叠加模式（PS 式编辑）：点「生成文字 Logo」后，<b>直接在画布上拖动文字</b>即可移动位置；拖<b>文字右下角的蓝色方块</b>可拉伸缩放大小；鼠标悬停在文字上<b>滚轮</b>也能缩放。调整满意后<b>按 Enter</b>（或点画布右上角「✓ 固定文字」）固定文字、退出编辑；之后可直接用画笔修改，<b>双击文字</b>可重新进入编辑。位置 / 高度滑块与拖动实时同步，误操作按 <b>Ctrl+Z</b> 撤销（画布右上角也有撤销 / 重做按钮）。按住 <b>Alt</b> 可在文字区域内使用画笔（仅编辑态需要）。</div>
         <div class="row">
           <label>阈值</label>
           <input type="range" id="rgTh1" min="20" max="235" value="128"><span class="mono" id="vTh1">128</span>
@@ -253,7 +257,13 @@ canvas{image-rendering:pixelated;background:#000}
     </div>
     <div class="viewbox">
       <div class="vh"><b>新 Logo</b>（可直接用画笔修改）<span id="newMeta">-</span><div class="spacer"></div><span class="hint">拖动 = 画 / 擦</span></div>
-      <div class="cwrap"><canvas id="cvNew"></canvas></div>
+      <div class="cwrap" style="position:relative"><canvas id="cvNew"></canvas>
+        <div id="histBar">
+          <button id="btnUndo2" title="撤销上一步 (Ctrl+Z)" disabled>↶ 撤销</button>
+          <button id="btnRedo2" title="重做 (Ctrl+Y)" disabled>↷ 重做</button>
+          <button id="btnCommitTxt" title="固定文字：退出拖动/缩放编辑，之后可直接用画笔 (Enter)" style="display:none">✓ 固定文字 (Enter)</button>
+        </div>
+      </div>
     </div>
   </div>
 </main>

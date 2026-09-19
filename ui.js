@@ -276,8 +276,8 @@ function drawNew() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(S.inkCv, 0, 0, cv.width, cv.height);
   $('newMeta').textContent = S.tw + '×' + S.th + 'px · ' + z + 'x';
-  // 文字层编辑框：虚线包围盒 + 右下角缩放句柄（叠加会话中、文字 tab 显示）
-  if (S.tab === 'text' && S.baseInk && S.txtBBox) {
+  // 文字层编辑框：虚线包围盒 + 右下角缩放句柄（叠加会话中、文字 tab 显示；按 Enter 固定后隐藏）
+  if (S.tab === 'text' && S.baseInk && S.txtBBox && S.txtEdit) {
     const b = S.txtBBox, hs = 5;
     ctx.strokeStyle = '#37b6ff'; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
     ctx.strokeRect(b.x0 * z - 1.5, b.y0 * z - 1.5, (b.x1 - b.x0 + 1) * z + 3, (b.y1 - b.y0 + 1) * z + 3);
@@ -345,10 +345,27 @@ function updHistBtns() {
   const b1 = $('btnUndo'), b2 = $('btnRedo');
   if (b1) b1.disabled = !undoStack.length;
   if (b2) b2.disabled = !redoStack.length;
+  const c1 = $('btnUndo2'), c2 = $('btnRedo2');
+  if (c1) c1.disabled = !undoStack.length;
+  if (c2) c2.disabled = !redoStack.length;
+  const cb = $('btnCommitTxt');
+  if (cb) cb.style.display = (S.tab === 'text' && S.baseInk && S.txtEdit) ? '' : 'none';
+}
+// 固定文字：退出 PS 式编辑态（Enter / Esc / 按钮），之后画笔无需 Alt 即可作画
+function commitTxt() {
+  if (!S.txtEdit || !S.baseInk) return false;
+  S.txtEdit = false;
+  updHistBtns(); drawNew();
+  toast('文字已固定：退出拖动 / 缩放编辑，可直接用画笔；双击文字可重新编辑', 3200);
+  return true;
 }
 document.addEventListener('keydown', e => {
   const t = e.target;
   if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
+  if (e.key === 'Enter' || e.key === 'Escape') {
+    if (commitTxt()) e.preventDefault();
+    return;
+  }
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   const k = e.key.toLowerCase();
   if (k === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
@@ -431,7 +448,8 @@ function genText(showToast = true) {
     if (cc) { S.cellColors = cc; S.keepColor = true; $('ckKeepColor').checked = true; }
     else S.cellColors = null;
     setInk(ink);
-    if (showToast) toast('文字已叠加（新增 ' + added + ' px），大小/位置滑块可实时调整');
+    S.txtEdit = true; updHistBtns();
+    if (showToast) toast('文字已叠加（新增 ' + added + ' px），可直接拖动 / 缩放；按 Enter 固定文字');
   } else {
     S.baseInk = null; S.baseCC = null;
     if (canColor() && S.writeColor != null) S.cellColors = new Uint8Array(S.rows * S.cols).fill(S.writeColor);
@@ -585,12 +603,17 @@ $('btnInkClr').onclick = () => { if (!S.ink) return; pushHistory(); S.baseInk = 
 $('btnInkRestore').onclick = () => { if (S.g) { pushHistory(); buildInkFromOriginal(); } };
 $('btnUndo').onclick = doUndo;
 $('btnRedo').onclick = doRedo;
+$('btnUndo2').onclick = doUndo;
+$('btnRedo2').onclick = doRedo;
+$('btnCommitTxt').onclick = commitTxt;
 
 let painting = false, imgDrag = null, txtDrag = null, wheelLock = false;
 const cvNew = $('cvNew');
 // 文字层命中检测：返回 'move'（框内）/ 'scale'（右下角句柄）/ null（e 坐标为画布内屏幕 px）
-function txtHit(mx, my) {
+// ignoreEdit=true 时只做几何判定（供「双击重新进入编辑」使用）
+function txtHit(mx, my, ignoreEdit) {
   if (S.tab !== 'text' || !S.baseInk || !S.txtBBox) return null;
+  if (!S.txtEdit && !ignoreEdit) return null;
   const z = cvNew.width / S.tw, b = S.txtBBox;
   if (Math.abs(mx - b.x1 * z) <= 8 && Math.abs(my - b.y1 * z) <= 8) return 'scale';
   if (mx >= b.x0 * z - 3 && mx <= (b.x1 + 1) * z + 3 && my >= b.y0 * z - 3 && my <= (b.y1 + 1) * z + 3) return 'move';
@@ -661,6 +684,15 @@ cvNew.addEventListener('pointerup', () => {
   if (imgDrag) { imgDrag = null; cvNew.style.cursor = ''; return; }
   if (txtDrag) { txtDrag = null; cvNew.style.cursor = ''; return; }
   if (painting) { painting = false; refreshStats(); }
+});
+// 文字固定后：双击文字区域重新进入编辑态
+cvNew.addEventListener('dblclick', e => {
+  if (S.tab !== 'text' || !S.baseInk || !S.txtBBox || S.txtEdit) return;
+  const r = cvNew.getBoundingClientRect();
+  if (txtHit(e.clientX - r.left, e.clientY - r.top, true)) {
+    S.txtEdit = true; updHistBtns(); drawNew();
+    toast('已重新进入文字编辑：拖动移动 / 右下角缩放，按 Enter 固定', 2600);
+  }
 });
 cvNew.addEventListener('wheel', e => {
   if (S.tab === 'img' && S.imgEl) {
@@ -993,6 +1025,7 @@ function tab(name) {
     $('pane' + t).classList.toggle('on', t.toLowerCase() === name);
   });
   cvNew.style.cursor = (name === 'img' && S.imgEl) ? 'grab' : '';
+  updHistBtns();
 }
 $('tabText').onclick = () => tab('text');
 $('tabImg').onclick = () => tab('img');
